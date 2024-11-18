@@ -64,12 +64,19 @@ type University struct {
 }
 
 type User struct {
-	ID           uuid.UUID `json:"id"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-	Name         string    `json:"name"`
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
 	LevelID      uuid.UUID `json:"level_id"`
 	FacultyID    uuid.UUID `json:"faculty_id"`
 	DepartmentID uuid.UUID `json:"department_id"`
+	Password     string
 	UniversityID uuid.UUID `json:"university_id"`
+	FirstName    string    `json:"first_name"`
+	LastName     string    `json:"last_name"`
+	OtherName    string    `json:"other_name"`
+	Email        string    `json:"email"`
+	MatricNumber string    `json:"matric_number"`
+	IsAdmin      bool
 }

@@ -28,6 +28,14 @@ type Department struct {
 	FacultyID uuid.UUID
 }
 
+type Dev struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Name      string
+	Password  string
+}
+
 type Faculty struct {
 	ID           uuid.UUID
 	CreatedAt    time.Time
@@ -59,16 +67,21 @@ type University struct {
 	UpdatedAt time.Time
 	Name      string
 	Alias     string
-	IsAdmin   bool
 }
 
 type User struct {
 	ID           uuid.UUID
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
-	Name         string
+	FirstName    string
+	LastName     string
+	OtherName    string
+	Email        string
+	MatricNumber string
 	LevelID      uuid.UUID
 	FacultyID    uuid.UUID
 	DepartmentID uuid.UUID
 	UniversityID uuid.UUID
+	IsAdmin      bool
+	Password     string
 }

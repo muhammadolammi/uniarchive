@@ -58,6 +58,12 @@ func server(s *state) {
 	// materials endpoint
 	apiRoute.Post("/materials", s.materialsPOSTHandler)
 	apiRoute.Get("/materials", s.materialsGETHandler)
+	// auth endpoint
+	apiRoute.Post("/signup", s.signUpHandler)
+	apiRoute.Post("/signin", s.signInHandler)
+
+	// users endpoint
+	apiRoute.Get("/users", s.usersGETHandler)
 
 	router.Mount("/api", apiRoute)
 

@@ -14,7 +14,7 @@ import (
 
 const createUser = `-- name: CreateUser :one
 
-INSERT INTO users(created_at, updated_at, name,level_id,  faculty_id, department_id, university_id)
+INSERT INTO users(created_at, updated_at, first_name, last_name, other_name, email, matric_number, password, level_id,  faculty_id, department_id, university_id)
 VALUES(
     $1,
     $2,
@@ -22,15 +22,25 @@ VALUES(
     $4,
     $5,
     $6,
-    $7
+    $7,
+    $8,
+    $9,
+    $10,
+    $11,
+    $12
 )
-RETURNING id, created_at, updated_at, name, level_id, faculty_id, department_id, university_id
+RETURNING id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password
 `
 
 type CreateUserParams struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
-	Name         string
+	FirstName    string
+	LastName     string
+	OtherName    string
+	Email        string
+	MatricNumber string
+	Password     string
 	LevelID      uuid.UUID
 	FacultyID    uuid.UUID
 	DepartmentID uuid.UUID
@@ -41,7 +51,12 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	row := q.db.QueryRowContext(ctx, createUser,
 		arg.CreatedAt,
 		arg.UpdatedAt,
-		arg.Name,
+		arg.FirstName,
+		arg.LastName,
+		arg.OtherName,
+		arg.Email,
+		arg.MatricNumber,
+		arg.Password,
 		arg.LevelID,
 		arg.FacultyID,
 		arg.DepartmentID,
@@ -52,17 +67,75 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Name,
+		&i.FirstName,
+		&i.LastName,
+		&i.OtherName,
+		&i.Email,
+		&i.MatricNumber,
 		&i.LevelID,
 		&i.FacultyID,
 		&i.DepartmentID,
 		&i.UniversityID,
+		&i.IsAdmin,
+		&i.Password,
+	)
+	return i, err
+}
+
+const getUserWithEmail = `-- name: GetUserWithEmail :one
+SELECT id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password FROM users WHERE email=$1
+`
+
+func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserWithEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.OtherName,
+		&i.Email,
+		&i.MatricNumber,
+		&i.LevelID,
+		&i.FacultyID,
+		&i.DepartmentID,
+		&i.UniversityID,
+		&i.IsAdmin,
+		&i.Password,
+	)
+	return i, err
+}
+
+const getUserWithMatricNumber = `-- name: GetUserWithMatricNumber :one
+SELECT id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password FROM users WHERE matric_number=$1
+`
+
+func (q *Queries) GetUserWithMatricNumber(ctx context.Context, matricNumber string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserWithMatricNumber, matricNumber)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.OtherName,
+		&i.Email,
+		&i.MatricNumber,
+		&i.LevelID,
+		&i.FacultyID,
+		&i.DepartmentID,
+		&i.UniversityID,
+		&i.IsAdmin,
+		&i.Password,
 	)
 	return i, err
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, created_at, updated_at, name, level_id, faculty_id, department_id, university_id FROM users
+SELECT id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password FROM users
 `
 
 func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
@@ -78,11 +151,17 @@ func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 			&i.ID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Name,
+			&i.FirstName,
+			&i.LastName,
+			&i.OtherName,
+			&i.Email,
+			&i.MatricNumber,
 			&i.LevelID,
 			&i.FacultyID,
 			&i.DepartmentID,
 			&i.UniversityID,
+			&i.IsAdmin,
+			&i.Password,
 		); err != nil {
 			return nil, err
 		}

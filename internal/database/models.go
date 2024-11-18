@@ -15,6 +15,7 @@ type Course struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	Name         string
+	CourseCode   string
 	LevelID      uuid.UUID
 	DepartmentID uuid.UUID
 }
@@ -58,6 +59,7 @@ type University struct {
 	UpdatedAt time.Time
 	Name      string
 	Alias     string
+	IsAdmin   bool
 }
 
 type User struct {

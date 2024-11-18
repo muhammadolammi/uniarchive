@@ -34,9 +34,30 @@ func server(s *state) {
 	apiRoute.Get("/ready", helloReady)
 	apiRoute.Get("/error", errorReady)
 
+	//universities endpoint
 	apiRoute.Post("/universities", s.universitiesPOSTHandler)
 	apiRoute.Get("/universities", s.universitiesGETHandler)
 	apiRoute.Patch("/universities", s.universitiesPATCHHandler)
+
+	// faculties endpoint
+	apiRoute.Post("/faculties", s.facultiesPOSTHandler)
+	apiRoute.Get("/faculties", s.facultiesGETHandler)
+
+	// departments endpoint
+	apiRoute.Post("/departments", s.departmentsPOSTHandler)
+	apiRoute.Get("/departments", s.departmentsGETHandler)
+
+	// levels endpoint
+	apiRoute.Post("/levels", s.levelsPOSTHandler)
+	apiRoute.Get("/levels", s.levelsGETHandler)
+
+	// courses endpoint
+	apiRoute.Post("/courses", s.coursesPOSTHandler)
+	apiRoute.Get("/courses", s.coursesGETHandler)
+
+	// materials endpoint
+	apiRoute.Post("/materials", s.materialsPOSTHandler)
+	apiRoute.Get("/materials", s.materialsGETHandler)
 
 	router.Mount("/api", apiRoute)
 

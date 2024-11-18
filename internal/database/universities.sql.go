@@ -21,7 +21,7 @@ VALUES(
     $3,
     $4
 )
-RETURNING id, created_at, updated_at, name, alias
+RETURNING id, created_at, updated_at, name, alias, is_admin
 `
 
 type CreateUniversityParams struct {
@@ -45,6 +45,7 @@ func (q *Queries) CreateUniversity(ctx context.Context, arg CreateUniversityPara
 		&i.UpdatedAt,
 		&i.Name,
 		&i.Alias,
+		&i.IsAdmin,
 	)
 	return i, err
 }
@@ -76,7 +77,7 @@ func (q *Queries) EditUniversity(ctx context.Context, arg EditUniversityParams) 
 }
 
 const getUniversities = `-- name: GetUniversities :many
-SELECT id, created_at, updated_at, name, alias FROM universities
+SELECT id, created_at, updated_at, name, alias, is_admin FROM universities
 `
 
 func (q *Queries) GetUniversities(ctx context.Context) ([]University, error) {
@@ -94,6 +95,7 @@ func (q *Queries) GetUniversities(ctx context.Context) ([]University, error) {
 			&i.UpdatedAt,
 			&i.Name,
 			&i.Alias,
+			&i.IsAdmin,
 		); err != nil {
 			return nil, err
 		}

@@ -6,8 +6,11 @@ CREATE TABLE courses(
  created_at TIMESTAMP NOT NULL,
  updated_at TIMESTAMP NOT NULL,
  name TEXT UNIQUE NOT NULL,
- level_id UUID  NOT NULL REFERENCES levels(id) ,
- department_id UUID NOT NULL REFERENCES department(id) ON DELETE  CASCADE
+ course_code TEXT UNIQUE NOT NULL,
+ level_id UUID  NOT NULL,
+  FOREIGN KEY (level_id)   REFERENCES levels(id) ,
+ department_id UUID NOT NULL ,
+  FOREIGN KEY (department_id)   REFERENCES departments(id) ON DELETE  CASCADE
 );
 
 -- +goose Down

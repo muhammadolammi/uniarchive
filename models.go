@@ -17,6 +17,7 @@ type Course struct {
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 	Name         string    `json:"name"`
+	CourseCode   string    `json:"course_code"`
 	LevelID      uuid.UUID `json:"level_id"`
 	DepartmentID uuid.UUID `json:"department_id"`
 }

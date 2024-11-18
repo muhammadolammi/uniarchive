@@ -6,7 +6,8 @@ CREATE TABLE materials(
  created_at TIMESTAMP NOT NULL,
  updated_at TIMESTAMP NOT NULL,
  name TEXT UNIQUE NOT NULL,
- course_id UUID  NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+ course_id UUID  NOT NULL,
+  FOREIGN KEY (course_id)   REFERENCES courses(id) ON DELETE CASCADE,
  cloud_url TEXT UNIQUE NOT NULL
  
 );

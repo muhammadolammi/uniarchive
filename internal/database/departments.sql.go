@@ -50,11 +50,11 @@ func (q *Queries) CreateDepartment(ctx context.Context, arg CreateDepartmentPara
 }
 
 const getDepartments = `-- name: GetDepartments :many
-SELECT id, created_at, updated_at, name, faculty_id FROM departments
+SELECT id, created_at, updated_at, name, faculty_id FROM departments WHERE faculty_id=$1
 `
 
-func (q *Queries) GetDepartments(ctx context.Context) ([]Department, error) {
-	rows, err := q.db.QueryContext(ctx, getDepartments)
+func (q *Queries) GetDepartments(ctx context.Context, facultyID uuid.UUID) ([]Department, error) {
+	rows, err := q.db.QueryContext(ctx, getDepartments, facultyID)
 	if err != nil {
 		return nil, err
 	}

@@ -53,12 +53,48 @@ func (q *Queries) CreateMaterial(ctx context.Context, arg CreateMaterialParams) 
 	return i, err
 }
 
-const getMaterials = `-- name: GetMaterials :many
-SELECT id, created_at, updated_at, name, course_id, cloud_url FROM materials
+const getCourseMaterials = `-- name: GetCourseMaterials :many
+SELECT id, created_at, updated_at, name, course_id, cloud_url FROM materials WHERE course_id=$1
 `
 
-func (q *Queries) GetMaterials(ctx context.Context) ([]Material, error) {
-	rows, err := q.db.QueryContext(ctx, getMaterials)
+func (q *Queries) GetCourseMaterials(ctx context.Context, courseID uuid.UUID) ([]Material, error) {
+	rows, err := q.db.QueryContext(ctx, getCourseMaterials, courseID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Material
+	for rows.Next() {
+		var i Material
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.CourseID,
+			&i.CloudUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getDefaultMaterials = `-- name: GetDefaultMaterials :many
+SELECT materials.id,materials.created_at, materials.updated_at, materials.name , materials.course_id , materials.cloud_url FROM materials
+JOIN courses ON courses.id = materials.course_id
+ WHERE courses.department_id=$1
+`
+
+func (q *Queries) GetDefaultMaterials(ctx context.Context, departmentID uuid.UUID) ([]Material, error) {
+	rows, err := q.db.QueryContext(ctx, getDefaultMaterials, departmentID)
 	if err != nil {
 		return nil, err
 	}

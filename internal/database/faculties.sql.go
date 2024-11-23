@@ -50,11 +50,11 @@ func (q *Queries) CreateFaculty(ctx context.Context, arg CreateFacultyParams) (F
 }
 
 const getFaculties = `-- name: GetFaculties :many
-SELECT id, created_at, updated_at, name, university_id FROM faculties
+SELECT id, created_at, updated_at, name, university_id FROM faculties WHERE university_id=$1
 `
 
-func (q *Queries) GetFaculties(ctx context.Context) ([]Faculty, error) {
-	rows, err := q.db.QueryContext(ctx, getFaculties)
+func (q *Queries) GetFaculties(ctx context.Context, universityID uuid.UUID) ([]Faculty, error) {
+	rows, err := q.db.QueryContext(ctx, getFaculties, universityID)
 	if err != nil {
 		return nil, err
 	}

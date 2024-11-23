@@ -111,7 +111,7 @@ func convertDBMaterialsToMainMaterials(dbMaterials []database.Material) []Materi
 	return materials
 }
 
-func convertDBUserToMainMaterial(dbUser database.User) User {
+func convertDBUserToMainUser(dbUser database.User) User {
 	return User{
 		ID:           dbUser.ID,
 		CreatedAt:    dbUser.CreatedAt,
@@ -125,7 +125,6 @@ func convertDBUserToMainMaterial(dbUser database.User) User {
 		UniversityID: dbUser.UniversityID,
 		FacultyID:    dbUser.FacultyID,
 		DepartmentID: dbUser.DepartmentID,
-		Password:     dbUser.Password,
 		IsAdmin:      dbUser.IsAdmin,
 	}
 }
@@ -133,7 +132,7 @@ func convertDBUserToMainMaterial(dbUser database.User) User {
 func convertDBUsersToMainUsers(dbUsers []database.User) []User {
 	users := []User{}
 	for _, dbUser := range dbUsers {
-		users = append(users, convertDBUserToMainMaterial(dbUser))
+		users = append(users, convertDBUserToMainUser(dbUser))
 	}
 	return users
 }

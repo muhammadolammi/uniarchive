@@ -57,12 +57,15 @@ func (q *Queries) CreateCourse(ctx context.Context, arg CreateCourseParams) (Cou
 	return i, err
 }
 
-const getCourses = `-- name: GetCourses :many
-SELECT id, created_at, updated_at, name, course_code, level_id, department_id FROM courses
+const getUserCourses = `-- name: GetUserCourses :many
+SELECT courses.id, courses.created_at, courses.updated_at, courses.name, courses.course_code, courses.level_id, courses.department_id
+FROM courses
+JOIN users ON users.department_id = courses.department_id AND users.level_id = courses.level_id
+WHERE users.id = $1
 `
 
-func (q *Queries) GetCourses(ctx context.Context) ([]Course, error) {
-	rows, err := q.db.QueryContext(ctx, getCourses)
+func (q *Queries) GetUserCourses(ctx context.Context, userID uuid.UUID) ([]Course, error) {
+	rows, err := q.db.QueryContext(ctx, getUserCourses, userID)
 	if err != nil {
 		return nil, err
 	}

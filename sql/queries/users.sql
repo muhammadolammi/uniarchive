@@ -26,6 +26,17 @@ SET is_admin=true WHERE id=$1;
 
 -- name: GetUserWithEmail :one
 SELECT * FROM users WHERE email=$1;
+-- name: GetUser :one
+SELECT * FROM users WHERE id=$1;
 
 -- name: GetUserWithMatricNumber :one
 SELECT * FROM users WHERE matric_number=$1;
+
+-- name: UpdateRefreshToken :exec
+UPDATE users SET refresh_token=$1 WHERE id=sqlc.arg('user_id');
+
+-- name: GetRefreshToken :one
+SELECT refresh_token FROM users  WHERE id=sqlc.arg('user_id');
+
+-- name: UpdateUserProfilePicture :exec
+UPDATE users SET profile_picture=$1 WHERE id=sqlc.arg('user_id');

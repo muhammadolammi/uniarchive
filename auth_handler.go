@@ -1,14 +1,18 @@
 package main
 
+// acess  token  5 minutes, that refresh every 5 minutes and we use refresh token to refresh
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/muhammadolammi/uniarchive/internal/auth"
 	"github.com/muhammadolammi/uniarchive/internal/database"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -72,6 +76,7 @@ func (s *state) signUpHandler(w http.ResponseWriter, r *http.Request) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.Password), 10)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("error encrypting password. err: %v", err))
+		return
 	}
 	_, err = s.db.CreateUser(context.Background(), database.CreateUserParams{
 		CreatedAt:    time.Now(),
@@ -85,8 +90,19 @@ func (s *state) signUpHandler(w http.ResponseWriter, r *http.Request) {
 		FacultyID:    params.FacultyID,
 		DepartmentID: params.DepartmentID,
 		LevelID:      params.LevelID,
+		MatricNumber: params.MatricNumber,
 	})
 	if err != nil {
+		log.Println(err)
+		if strings.Contains(err.Error(), `pq: duplicate key value violates unique constraint "users_email_key"`) {
+			respondWithError(w, http.StatusUnauthorized, "user with that email already exist")
+			return
+		}
+		if strings.Contains(err.Error(), `pq: duplicate key value violates unique constraint "users_matric_number_key"`) {
+			respondWithError(w, http.StatusUnauthorized, "user with that matric number already exist")
+			return
+		}
+
 		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("error creating user. err:%v", err))
 		return
 	}
@@ -120,6 +136,7 @@ func (s *state) signInHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("error getting user with that email. err: %v", err))
+		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(params.Password))
@@ -128,10 +145,57 @@ func (s *state) signInHandler(w http.ResponseWriter, r *http.Request) {
 			respondWithError(w, http.StatusUnauthorized, "Wrong password.")
 			return
 		}
-		respondWithError(w, http.StatusUnauthorized, fmt.Sprintf(" err: %v", err))
+		respondWithError(w, http.StatusUnauthorized, fmt.Sprintf("error hasing password err: %v", err))
 		return
 	}
-	// TODO write JWT that generate a logged in token on the server http
+	// 6 minute here to give the frontend time to call refresh
+
+	err = auth.UpdateAccessToken([]byte(s.JWTSIGNER), user.ID, accessTokenExpirationTime, w)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, fmt.Sprintf("error updating access token err: %v", err))
+		return
+
+	}
+
+	err = auth.UpdateRefreshToken([]byte(s.JWTSIGNER), user.ID, refreshTokenExpirationTime, s.db)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, fmt.Sprintf("error updating refresh token err: %v", err))
+		return
+
+	}
+
 	respondWithJson(w, http.StatusOK, "log in successful")
+
+}
+
+func (s *state) validateHandler(w http.ResponseWriter, r *http.Request, user database.User) {
+	respondWithJson(w, http.StatusOK, convertDBUserToMainUser(user))
+}
+
+func (s *state) refreshHandler(w http.ResponseWriter, r *http.Request, user database.User) {
+	refreshToken := user.RefreshToken
+	// Verify the token
+	token, err := jwt.Parse(refreshToken.String, func(token *jwt.Token) (interface{}, error) {
+		return []byte(s.JWTSIGNER), nil
+	})
+
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, fmt.Sprintf("error parsing token string to jwt. err: %v", err))
+		return
+	}
+
+	if !token.Valid {
+		respondWithError(w, http.StatusUnauthorized, "invalid refresh token")
+		return
+	}
+
+	// If the refresh token is valid
+	err = auth.UpdateAccessToken([]byte(s.JWTSIGNER), user.ID, accessTokenExpirationTime, w)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, fmt.Sprintf("error refreshing access token. err: %v", err))
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, "tokens refreshed")
 
 }

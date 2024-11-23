@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,7 +30,7 @@ VALUES(
     $11,
     $12
 )
-RETURNING id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password
+RETURNING id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password, refresh_token, profile_picture
 `
 
 type CreateUserParams struct {
@@ -78,12 +79,53 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.UniversityID,
 		&i.IsAdmin,
 		&i.Password,
+		&i.RefreshToken,
+		&i.ProfilePicture,
+	)
+	return i, err
+}
+
+const getRefreshToken = `-- name: GetRefreshToken :one
+SELECT refresh_token FROM users  WHERE id=$1
+`
+
+func (q *Queries) GetRefreshToken(ctx context.Context, userID uuid.UUID) (sql.NullString, error) {
+	row := q.db.QueryRowContext(ctx, getRefreshToken, userID)
+	var refresh_token sql.NullString
+	err := row.Scan(&refresh_token)
+	return refresh_token, err
+}
+
+const getUser = `-- name: GetUser :one
+SELECT id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password, refresh_token, profile_picture FROM users WHERE id=$1
+`
+
+func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.FirstName,
+		&i.LastName,
+		&i.OtherName,
+		&i.Email,
+		&i.MatricNumber,
+		&i.LevelID,
+		&i.FacultyID,
+		&i.DepartmentID,
+		&i.UniversityID,
+		&i.IsAdmin,
+		&i.Password,
+		&i.RefreshToken,
+		&i.ProfilePicture,
 	)
 	return i, err
 }
 
 const getUserWithEmail = `-- name: GetUserWithEmail :one
-SELECT id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password FROM users WHERE email=$1
+SELECT id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password, refresh_token, profile_picture FROM users WHERE email=$1
 `
 
 func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, error) {
@@ -104,12 +146,14 @@ func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, err
 		&i.UniversityID,
 		&i.IsAdmin,
 		&i.Password,
+		&i.RefreshToken,
+		&i.ProfilePicture,
 	)
 	return i, err
 }
 
 const getUserWithMatricNumber = `-- name: GetUserWithMatricNumber :one
-SELECT id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password FROM users WHERE matric_number=$1
+SELECT id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password, refresh_token, profile_picture FROM users WHERE matric_number=$1
 `
 
 func (q *Queries) GetUserWithMatricNumber(ctx context.Context, matricNumber string) (User, error) {
@@ -130,12 +174,14 @@ func (q *Queries) GetUserWithMatricNumber(ctx context.Context, matricNumber stri
 		&i.UniversityID,
 		&i.IsAdmin,
 		&i.Password,
+		&i.RefreshToken,
+		&i.ProfilePicture,
 	)
 	return i, err
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password FROM users
+SELECT id, created_at, updated_at, first_name, last_name, other_name, email, matric_number, level_id, faculty_id, department_id, university_id, is_admin, password, refresh_token, profile_picture FROM users
 `
 
 func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
@@ -162,6 +208,8 @@ func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 			&i.UniversityID,
 			&i.IsAdmin,
 			&i.Password,
+			&i.RefreshToken,
+			&i.ProfilePicture,
 		); err != nil {
 			return nil, err
 		}
@@ -183,5 +231,33 @@ SET is_admin=true WHERE id=$1
 
 func (q *Queries) MakeUserAnAdmin(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, makeUserAnAdmin, id)
+	return err
+}
+
+const updateRefreshToken = `-- name: UpdateRefreshToken :exec
+UPDATE users SET refresh_token=$1 WHERE id=$2
+`
+
+type UpdateRefreshTokenParams struct {
+	RefreshToken sql.NullString
+	UserID       uuid.UUID
+}
+
+func (q *Queries) UpdateRefreshToken(ctx context.Context, arg UpdateRefreshTokenParams) error {
+	_, err := q.db.ExecContext(ctx, updateRefreshToken, arg.RefreshToken, arg.UserID)
+	return err
+}
+
+const updateUserProfilePicture = `-- name: UpdateUserProfilePicture :exec
+UPDATE users SET profile_picture=$1 WHERE id=$2
+`
+
+type UpdateUserProfilePictureParams struct {
+	ProfilePicture sql.NullString
+	UserID         uuid.UUID
+}
+
+func (q *Queries) UpdateUserProfilePicture(ctx context.Context, arg UpdateUserProfilePictureParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserProfilePicture, arg.ProfilePicture, arg.UserID)
 	return err
 }

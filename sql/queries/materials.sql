@@ -10,5 +10,10 @@ VALUES(
 )
 RETURNING *;
 
--- name: GetMaterials :many
-SELECT * FROM materials;
+-- name: GetCourseMaterials :many
+SELECT * FROM materials WHERE course_id=$1;
+
+-- name: GetDefaultMaterials :many
+SELECT materials.id,materials.created_at, materials.updated_at, materials.name , materials.course_id , materials.cloud_url FROM materials
+JOIN courses ON courses.id = materials.course_id
+ WHERE courses.department_id=$1;

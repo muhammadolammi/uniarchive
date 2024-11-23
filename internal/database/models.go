@@ -5,6 +5,7 @@
 package database
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -70,18 +71,20 @@ type University struct {
 }
 
 type User struct {
-	ID           uuid.UUID
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	FirstName    string
-	LastName     string
-	OtherName    string
-	Email        string
-	MatricNumber string
-	LevelID      uuid.UUID
-	FacultyID    uuid.UUID
-	DepartmentID uuid.UUID
-	UniversityID uuid.UUID
-	IsAdmin      bool
-	Password     string
+	ID             uuid.UUID
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	FirstName      string
+	LastName       string
+	OtherName      string
+	Email          string
+	MatricNumber   string
+	LevelID        uuid.UUID
+	FacultyID      uuid.UUID
+	DepartmentID   uuid.UUID
+	UniversityID   uuid.UUID
+	IsAdmin        bool
+	Password       string
+	RefreshToken   sql.NullString
+	ProfilePicture sql.NullString
 }

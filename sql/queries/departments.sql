@@ -10,4 +10,4 @@ VALUES(
 RETURNING *;
 
 -- name: GetDepartments :many
-SELECT * FROM departments;
+SELECT * FROM departments WHERE faculty_id=$1;

@@ -25,6 +25,11 @@ func main() {
 		log.Println("there is no port provided kindly provide a port.")
 		return
 	}
+	jwtSigner := os.Getenv("JWT_SIGNER")
+	if jwtSigner == "" {
+		log.Println("there is jwtSigner provided kindly provide a jwtSigner.")
+		return
+	}
 	dbConn, err := sql.Open("postgres", dbUrl)
 	if err != nil {
 		log.Println("error opening an sql connection. err:", err)
@@ -33,8 +38,9 @@ func main() {
 	db := database.New(dbConn)
 
 	s := state{
-		db:   db,
-		PORT: port,
+		db:        db,
+		PORT:      port,
+		JWTSIGNER: jwtSigner,
 	}
 
 	server(&s)

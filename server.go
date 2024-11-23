@@ -14,7 +14,7 @@ func server(s *state) {
 
 	// Define CORS options
 	corsOptions := cors.Options{
-		AllowedOrigins: []string{"http://localhost:3000", "https://muhammaddev.com", "http://192.168.246.175:3000"}, // You can customize this based on your needs
+		AllowedOrigins: []string{"http://172.23.206.70:8080", "localhost"}, // You can customize this based on your needs
 
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"}, // You can customize this based on your needs
@@ -41,11 +41,11 @@ func server(s *state) {
 
 	// faculties endpoint
 	apiRoute.Post("/faculties", s.facultiesPOSTHandler)
-	apiRoute.Get("/faculties", s.facultiesGETHandler)
+	apiRoute.Get("/faculties/{universityID}", s.facultiesGETHandler)
 
 	// departments endpoint
 	apiRoute.Post("/departments", s.departmentsPOSTHandler)
-	apiRoute.Get("/departments", s.departmentsGETHandler)
+	apiRoute.Get("/departments/{facultyID}", s.departmentsGETHandler)
 
 	// levels endpoint
 	apiRoute.Post("/levels", s.levelsPOSTHandler)
@@ -53,17 +53,20 @@ func server(s *state) {
 
 	// courses endpoint
 	apiRoute.Post("/courses", s.coursesPOSTHandler)
-	apiRoute.Get("/courses", s.coursesGETHandler)
+	apiRoute.Get("/courses/{userID}", s.coursesGETHandler)
 
 	// materials endpoint
 	apiRoute.Post("/materials", s.materialsPOSTHandler)
-	apiRoute.Get("/materials", s.materialsGETHandler)
+	apiRoute.Get("/materials/{courseID}", s.materialsGETHandler)
 	// auth endpoint
 	apiRoute.Post("/signup", s.signUpHandler)
 	apiRoute.Post("/signin", s.signInHandler)
+	apiRoute.Post("/validate", s.middlewareLoggedIn(s.validateHandler))
+	apiRoute.Post("/refresh", s.middlewareLoggedIn(s.refreshHandler))
 
 	// users endpoint
 	apiRoute.Get("/users", s.usersGETHandler)
+	apiRoute.Post("/user/profilepicture", s.userProfilePictureHandler)
 
 	router.Mount("/api", apiRoute)
 

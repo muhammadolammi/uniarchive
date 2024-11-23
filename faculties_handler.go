@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/muhammadolammi/uniarchive/internal/database"
 )
@@ -47,7 +48,13 @@ func (s *state) facultiesPOSTHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *state) facultiesGETHandler(w http.ResponseWriter, r *http.Request) {
-	dbFaculties, err := s.db.GetFaculties(context.Background())
+	universityIdString := chi.URLParam(r, "universityID")
+	universityID, err := uuid.Parse(universityIdString)
+	if err != nil {
+		respondWithError(w, 501, fmt.Sprintf("error  parsing university id to uuid. err :%v", err))
+		return
+	}
+	dbFaculties, err := s.db.GetFaculties(context.Background(), universityID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("error getting faculties from db. err: %v", err))
 		return

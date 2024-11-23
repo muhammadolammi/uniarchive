@@ -8,8 +8,9 @@ import (
 )
 
 type state struct {
-	db   *database.Queries
-	PORT string
+	db        *database.Queries
+	PORT      string
+	JWTSIGNER string
 }
 
 type Course struct {
@@ -71,12 +72,12 @@ type User struct {
 	LevelID      uuid.UUID `json:"level_id"`
 	FacultyID    uuid.UUID `json:"faculty_id"`
 	DepartmentID uuid.UUID `json:"department_id"`
-	Password     string
+	// Password     string
 	UniversityID uuid.UUID `json:"university_id"`
 	FirstName    string    `json:"first_name"`
 	LastName     string    `json:"last_name"`
 	OtherName    string    `json:"other_name"`
 	Email        string    `json:"email"`
 	MatricNumber string    `json:"matric_number"`
-	IsAdmin      bool
+	IsAdmin      bool      `json:"is_admin"`
 }

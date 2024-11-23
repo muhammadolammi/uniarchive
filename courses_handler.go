@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/muhammadolammi/uniarchive/internal/database"
 )
@@ -54,7 +55,13 @@ func (s *state) coursesPOSTHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *state) coursesGETHandler(w http.ResponseWriter, r *http.Request) {
-	dbCourses, err := s.db.GetCourses(context.Background())
+	userIdString := chi.URLParam(r, "userID")
+	userID, err := uuid.Parse(userIdString)
+	if err != nil {
+		respondWithError(w, 501, fmt.Sprintf("error  parsing user id to uuid. err :%v", err))
+		return
+	}
+	dbCourses, err := s.db.GetUserCourses(context.Background(), userID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("error getting courses from db. err: %v", err))
 		return
